@@ -7,11 +7,10 @@ module.exports = {
   //输出
   output: {
     //文件的输出路径
-    // __dirname node.js的变量，代表当前文件的文件夹目录
-    path: path.resolve(__dirname, 'dist/'), //绝对路径
+    //开发模式没有输出
+    path: undefined,
     //入口文件打包输出的文件名
     filename: 'js/main.js',
-    clean: true, // 自动将上次打包目录资源清空
   },
   //加载器
   module: {
@@ -86,12 +85,12 @@ module.exports = {
   plugins: [
     // plugin的配置
     new ESlintPlugin({
-      context: path.resolve(__dirname, 'src'),
+      context: path.resolve(__dirname, '../src'),
     }),
     new HtmlWebpackPlugin({
       //模板，以public/index.html文件创建新的html文件
       //新的文件特点：1：结构和原来一致，2会自动引入打包的输出资源
-      template: path.resolve(__dirname, 'public/index.html'),
+      template: path.resolve(__dirname, '../public/index.html'),
     }),
   ],
   //模式
