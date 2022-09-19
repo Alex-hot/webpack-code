@@ -1,6 +1,26 @@
 const path = require('path'); //node.js核心模块，专门用来处理路径问题
 const ESlintPlugin = require('eslint-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+
+const getStyleLoader = (preProcessor) => {
+  return [
+    MiniCssExtractPlugin.loader,
+    'css-loader',
+    {
+      loader: 'postcss-loader',
+      options: {
+        postcssOptions: {
+          plugins: [
+            'postcss-preset-env', // 能解决大多数样式兼容性问题
+          ],
+        },
+      },
+    },
+    preProcessor,
+  ].filter(Boolean);
+};
+
 module.exports = {
   //入口
   entry: './src/main.js',
@@ -19,37 +39,20 @@ module.exports = {
       // loader的配置
       {
         test: /\.css$/, // 只检测css结尾的文件
-        use: [
-          //执行顺序 从右到左（从下到上）
-          'style-loader', // 将js中css通过创建style标签添加到html文件中生效
-          'css-loader', // 将css资源编译成commonjs模块到js中
-        ],
+        use: getStyleLoader(),
       },
       {
         test: /\.less$/,
         //loader：xxx,只能使用一个
-        use: [
-          //可以使用多个loader
-          // compiles Less to CSS
-          'style-loader',
-          'css-loader',
-          'less-loader', //将less文件编译成css文件
-        ],
+        use: getStyleLoader('less-loader'),
       },
       {
         test: /\.s[ac]ss$/,
-        use: [
-          // 将 JS 字符串生成为 style 节点
-          'style-loader',
-          // 将 CSS 转化成 CommonJS 模块
-          'css-loader',
-          // 将 Sass 编译成 CSS
-          'sass-loader',
-        ],
+        use: getStyleLoader('sass-loader'),
       },
       {
         test: /\.styl$/,
-        use: ['style-loader', 'css-loader', 'stylus-loader'],
+        use: getStyleLoader('stylus-loader'),
       },
       {
         test: /\.(png|jpe?g|gif|webp|svg)$/,
@@ -92,6 +95,9 @@ module.exports = {
       //模板，以public/index.html文件创建新的html文件
       //新的文件特点：1：结构和原来一致，2会自动引入打包的输出资源
       template: path.resolve(__dirname, '../public/index.html'),
+    }),
+    new MiniCssExtractPlugin({
+      filename: 'css/main.css',
     }),
   ],
   //模式
