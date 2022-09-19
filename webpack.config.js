@@ -6,9 +6,10 @@ module.exports = {
   output: {
     //文件的输出路径
     // __dirname node.js的变量，代表当前文件的文件夹目录
-    path: path.resolve(__dirname, 'dist'), //绝对路径
-    //文件名
-    filename: 'main.js',
+    path: path.resolve(__dirname, 'dist/'), //绝对路径
+    //入口文件打包输出的文件名
+    filename: 'js/main.js',
+    clean: true, // 自动将上次打包目录资源清空
   },
   //加载器
   module: {
@@ -47,6 +48,27 @@ module.exports = {
       {
         test: /\.styl$/,
         use: ['style-loader', 'css-loader', 'stylus-loader'],
+      },
+      {
+        test: /\.(png|jpe?g|gif|webp|svg)$/,
+        type: 'asset',
+        parser: {
+          dataUrlCondition: {
+            maxSize: 50 * 1024, // 10kb  //小于50kb图片转base64
+          },
+        },
+        generator: {
+          //输出图片名称
+          filename: 'images/[hash:10][ext][query]',
+        },
+      },
+      {
+        test: /\.(ttf|woff2?)$/,
+        type: 'asset/resource',
+        generator: {
+          //输出名称
+          filename: 'fonts/[hash:10][ext][query]',
+        },
       },
     ],
   },
