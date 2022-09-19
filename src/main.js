@@ -10,5 +10,5 @@ import './assets/styles/iconfont.css';
 console.log(conut(2, 1));
 console.log(sum(1, 2, 3, 4));
 
-let result = conut(2, 3);
+let result = conut(2, 5);
 console.log(result);
