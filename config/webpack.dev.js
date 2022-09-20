@@ -99,4 +99,5 @@ module.exports = {
   devServer: {
     open: true,
   },
+  devtool: 'cheap-module-source-map',
 };

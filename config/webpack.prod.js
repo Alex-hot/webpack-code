@@ -1,8 +1,13 @@
+const os = require('os');
 const path = require('path'); //node.js核心模块，专门用来处理路径问题
 const ESlintPlugin = require('eslint-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
+const TerserPlugin = require('terser-webpack-plugin');
+const ImageMinimizerPlugin = require('image-minimizer-webpack-plugin');
+
+const threads = os.cpus().length; //cpu核数
 
 const getStyleLoader = (preProcessor) => {
   return [
@@ -79,10 +84,22 @@ module.exports = {
       {
         test: /\.js$/,
         exclude: /node_modules/,
-        loader: 'babel-loader',
-        // options: {
-        //   presets: ['@babel/preset-env'],
-        // },
+        use: [
+          {
+            loader: 'thread-loader', //开启多进程
+            options: {
+              works: threads,
+            },
+          },
+          {
+            loader: 'babel-loader',
+            options: {
+              cacheDirectory: true, // 开启babel编译缓存
+              cacheCompression: false, // 缓存文件不要压缩
+              plugins: ['@babel/plugin-transform-runtime'], // 减少代码体积
+            },
+          },
+        ],
       },
     ],
   },
@@ -91,6 +108,10 @@ module.exports = {
     // plugin的配置
     new ESlintPlugin({
       context: path.resolve(__dirname, '../src'),
+      cache: true,
+      exclude: 'node_modules',
+      cacheLocation: path.resolve(__dirname, '../node_modules/.cache/.eslintcache'),
+      threads, //开启多进程和设置进程数量
     }),
     new HtmlWebpackPlugin({
       //模板，以public/index.html文件创建新的html文件
@@ -100,8 +121,51 @@ module.exports = {
     new MiniCssExtractPlugin({
       filename: 'css/main.css',
     }),
-    new CssMinimizerPlugin(),
+    // new CssMinimizerPlugin(),
+    // new TerserWebpackPlugin({
+    //   parallel: threads, // 开启多进程
+    // }),
   ],
+  optimization: {
+    minimize: true,
+    minimizer: [
+      // css压缩也可以写到optimization.minimizer里面，效果一样的
+      new CssMinimizerPlugin(),
+      // 当生产模式会默认开启TerserPlugin，但是我们需要进行其他配置，就要重新写了
+      new TerserPlugin({
+        parallel: threads, // 开启多进程
+      }),
+      // 压缩图片
+      new ImageMinimizerPlugin({
+        minimizer: {
+          implementation: ImageMinimizerPlugin.imageminGenerate,
+          options: {
+            plugins: [
+              ['gifsicle', { interlaced: true }],
+              ['jpegtran', { progressive: true }],
+              ['optipng', { optimizationLevel: 5 }],
+              [
+                'svgo',
+                {
+                  plugins: [
+                    'preset-default',
+                    'prefixIds',
+                    {
+                      name: 'sortAttrs',
+                      params: {
+                        xmlnsOrder: 'alphabetical',
+                      },
+                    },
+                  ],
+                },
+              ],
+            ],
+          },
+        },
+      }),
+    ],
+  },
   //模式
   mode: 'production',
+  devtool: 'source-map',
 };

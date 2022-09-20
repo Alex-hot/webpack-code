@@ -1,5 +1,6 @@
 import conut from './js/count';
 import sum from './js/sum';
+import { add } from './js/math';
 import './assets/styles/index.css';
 import './assets/styles/index.less';
 import './assets/styles/index.sass';
@@ -9,6 +10,4 @@ import './assets/styles/iconfont.css';
 
 console.log(conut(2, 1));
 console.log(sum(1, 2, 3, 4));
-
-let result = conut(2, 5);
-console.log(result);
+console.log(add(1, 2));
